@@ -1,32 +1,26 @@
-const avg = (p1, p2, t=0.5) => ({
-  x: p1.x + (p2.x - p1.x)*t,
-  y: p1.y + (p2.y - p1.y)*t,
-})
-
 
 class Snake {
   constructor(size, x, y) {
+    this.spacing = 9
+    this.maxVelocity = 4
+    this.rattleFactor = .56 // 0.58
     this.x = x
     this.y = y
-    this.maxVelocity = 4
-    this.velocity = 8
+    this.velocity = 0 //8
     this.direction = -Math.PI/2
-    this.rotation = 0
     this.backbone = Array.from({ length: size })
-      .map((_, i) =>  new PIXI.Point(0, i * 10))
+      .map((_, i) =>  new PIXI.Point(0, i * this.spacing))
     this.g = new PIXI.Graphics()
     this.g.x = x
     this.g.y = y
-    this.tick = 0
   }
 
   updateBones(t) {
     this.velocity *= 0.95
+    this.velocity = +this.velocity.toFixed(3)
     this.velocity = Math.max(this.velocity, 0)
 
-    const tick = (this.tick += t/10)
     const {x, y} = this.getVector()
-    // const velocity = Math.sqrt(x*x, y*y)
     // make the snake
     const deltas = this.backbone.reduce((deltas, point, i, points) => {
       if (i === 0) {
@@ -36,22 +30,18 @@ class Snake {
         const { x: x1, y: y1 } = point
         // pos of leading point
         const { x: x2, y: y2 } = points[i-1]
-        // distance from leading point
-        const dx2 = (x2-x1)
-        const dy2 = (y2-y1)
-        const distance = Math.sqrt(dx2*dx2 + dy2*dy2)
 
         // new pos of leading point
         const x3 = x2 + deltas[i-1].x 
         const y3 = y2 + deltas[i-1].y
         // direction form leading point to ???
-        const {x: xm, y: ym} = avg(point, points[i-1], .58 )
+        const {x: xm, y: ym} = avg(point, points[i-1], this.rattleFactor)
         const dx3 = -(x3-xm)
         const dy3 = -(y3-ym)
         const direction = Math.atan2(dy3, dx3)
 
         // new abs pos
-        const { x: dx, y: dy } = this.getVector(direction, distance)
+        const { x: dx, y: dy } = this.getVector(direction, this.spacing)
         const x = x3 + dx
         const y = y3 + dy
         deltas.push({
@@ -69,25 +59,28 @@ class Snake {
     this.renderBones()
   }
 
+  grow(n=1) {
+    const {x, y} = this.backbone[this.backbone.length-1]
+    while(n--) {
+      this.backbone.push(new PIXI.Point(x, y))
+    }
+  }
+
   renderBones() {
     const g = this.g
     const backbone = this.backbone
     g.clear()
 
     g.lineStyle(2, 0x888888)
-    g.moveTo( backbone[0].x,  backbone[0].y)
-  
-    for (let i = 1; i <  backbone.length; i++) {
-      g.lineTo( backbone[i].x,  backbone[i].y)
-    }
+
+    g.beginFill(0x999999)
     for (let i = backbone.length-1; i >= 0; i--) { // tail first
-      g.beginFill(0x999999)
       const r = (i == 0)
         ? 12
         : 10 - Math.max(0, Math.min(7, +7 - backbone.length+i))
       g.drawCircle(backbone[i].x,  backbone[i].y, r)
-      g.endFill()
     }
+    g.endFill()
   }
 
   turnRight(weight) {
@@ -109,6 +102,13 @@ class Snake {
     const r = velocity
     const x = r * Math.cos(a)
     const y = r * Math.sin(a)
+    return {x, y}
+  }
+
+  getHeadPos() {
+    let {x, y} = this.backbone[0]
+    x += this.x
+    y += this.y
     return {x, y}
   }
   
