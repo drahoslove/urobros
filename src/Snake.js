@@ -2,7 +2,7 @@
 class Snake {
   constructor(size, x, y) {
     this.spacing = 9
-    this.maxVelocity = 4
+    this.maxVelocity = 3
     this.rattleFactor = .56 // 0.58
     this.x = x
     this.y = y
@@ -11,6 +11,7 @@ class Snake {
     this.backbone = Array.from({ length: size })
       .map((_, i) =>  new PIXI.Point(0, i * this.spacing))
     this.g = new PIXI.Graphics()
+    this.g.alpha = 1
     this.g.x = x
     this.g.y = y
   }
@@ -18,7 +19,9 @@ class Snake {
   updateBones(t) {
     this.velocity *= 0.95
     this.velocity = +this.velocity.toFixed(3)
-    this.velocity = Math.max(this.velocity, 0)
+    if (this.velocity < 0.01) {
+      this.velocity = 0
+    }
 
     const {x, y} = this.getVector()
     // make the snake
@@ -63,12 +66,14 @@ class Snake {
     const {x, y} = this.backbone[this.backbone.length-1]
     while(n--) {
       this.backbone.push(new PIXI.Point(x, y))
+      this.maxVelocity += 0.1
     }
   }
 
   demage(n=1) {
     while(n-- && this.backbone.length > 7) {
       this.backbone.shift()
+      this.maxVelocity -= 0.1
       this.velocity++
     }
   }
@@ -78,9 +83,9 @@ class Snake {
     const backbone = this.backbone
     g.clear()
 
-    g.lineStyle(2, 0x888888)
+    // g.lineStyle(2, 0x888888)
 
-    g.beginFill(0x999999)
+    g.beginFill(this.color || 0x999999)
     for (let i = backbone.length-1; i >= 0; i--) { // tail first
       const r = (i == 0)
         ? 12
@@ -91,13 +96,13 @@ class Snake {
   }
 
   turnRight(weight) {
-    this.velocity += 0.4 * weight
+    this.velocity += 0.3 * weight
     this.velocity = Math.min(this.velocity, this.maxVelocity)
     this.direction += 0.05 * this.velocity/2 * weight
   }
 
   turnLeft(weight) {
-    this.velocity += 0.4 * weight
+    this.velocity += 0.3 * (1/(1-0.5*weight)-1)
     this.velocity = Math.min(this.velocity, this.maxVelocity)
     this.direction -= 0.05 * this.velocity/2 * weight
   }
@@ -117,6 +122,13 @@ class Snake {
     x += this.x
     y += this.y
     return {x, y}
+  }
+
+  getBonesPos() {
+    return this.backbone.map(({x, y}) => ({
+      x: x+this.x,
+      y: y+this.y,
+    }))
   }
   
 }
