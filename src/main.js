@@ -26,7 +26,7 @@ const snakes = Array.from({length: colors.length}).map((_, i) => {
   return snake
 })
 
-const sweets = Array.from({length: colors.length})
+const sweets = Array.from({length: colors.length*2})
   .map((_, i) => {
     const sweet = new PIXI.Graphics()
     sweet.color = colors[i%colors.length]
@@ -123,8 +123,8 @@ app.ticker.add((t) => {
   })
 
   // check eat
-  sweets.forEach((sweet) => {
-    snakes.forEach((snake) => {
+  snakes.forEach((snake) => {
+    sweets.filter(({color}) => color === snake.color).forEach((sweet) => {
       const d = dist(snake.getHeadPos(), sweet)
       if (d < 22) {
         snake.grow(3)
