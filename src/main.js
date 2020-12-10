@@ -1,3 +1,10 @@
+let score = 0
+
+const reposSweet = (sweet) => {
+  const O = 10
+  sweet.x = O+rand(app.view.width-2*O)
+  sweet.y = O+rand(app.view.height-2*O)
+}
 
 const app = new PIXI.Application({
   width: 1024,
@@ -11,19 +18,24 @@ const X = app.view.width/2
 const Y = app.view.height/2
 
 const snake = new Snake(15, X, Y)
-const sweet = new PIXI.Graphics()
+const sweets = Array.from({length: 2})
+  .map((_, i) => {
+    const sweet = new PIXI.Graphics()
+    sweet.color = [0x990000, 0x0099][i%2]
+    reposSweet(sweet)
+    return sweet
+  })
+
+const scoreText = new PIXI.Text('Score: 0', {
+  fontSize: 26,
+  fill: 0x666666,
+})
+scoreText.x = 10
+scoreText.y = 10
+
 app.stage.addChild(snake.g)
-app.stage.addChild(sweet)
-
-const rand = (n=2) => Math.floor(Math.random()*n)
-
-const generateSweet = () => {
-  sweet.x = rand(app.view.width)
-  sweet.y = rand(app.view.height)
-}
-
-generateSweet()
-
+app.stage.addChild(...sweets)
+app.stage.addChild(scoreText)
 
 // keyboard controll
 let keyboardDirection = 0
@@ -104,12 +116,17 @@ app.ticker.add((t) => {
   if (direction < 0) {
     snake.turnLeft(-direction)
   }
+
   // check eat
-  const d = dist(snake.getHeadPos(), sweet)
-  if (d < 22) {
-    snake.grow(3)
-    generateSweet()
-  }
+  sweets.forEach((sweet) => {
+    const d = dist(snake.getHeadPos(), sweet)
+    if (d < 22) {
+      snake.grow(3)
+      reposSweet(sweet)
+      score += 5
+      scoreText.text = `Score: ${score}`
+    }
+  })
 
   // check borders
 
@@ -119,17 +136,21 @@ app.ticker.add((t) => {
     x < E || y < E ||
     x > app.view.width-E  || y > app.view.height-E
   ) {
+    snake.demage()
     snake.direction += Math.PI/2
+    score--
+    score = Math.max(score, 0)
+    scoreText.text = `Score: ${score}`
   }
 
   snake.updateBones(t)
-  renderSweet()
+  sweets.forEach(renderSweet)
 })
 
 
-function renderSweet() {
+function renderSweet(sweet) {
   sweet.clear()
-  sweet.beginFill(0x990000)
+  sweet.beginFill(sweet.color)
   sweet.drawCircle(0, 0, 8)
   sweet.endFill()
 }

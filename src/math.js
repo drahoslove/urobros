@@ -1,3 +1,5 @@
+const rand = (n=2) => Math.floor(Math.random()*n)
+
 const dist = (p1, p2) => {
   const dx = p2.x - p1.x
   const dy = p2.y - p1.y

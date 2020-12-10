@@ -6,7 +6,7 @@ class Snake {
     this.rattleFactor = .56 // 0.58
     this.x = x
     this.y = y
-    this.velocity = 0 //8
+    this.velocity = 8
     this.direction = -Math.PI/2
     this.backbone = Array.from({ length: size })
       .map((_, i) =>  new PIXI.Point(0, i * this.spacing))
@@ -63,6 +63,13 @@ class Snake {
     const {x, y} = this.backbone[this.backbone.length-1]
     while(n--) {
       this.backbone.push(new PIXI.Point(x, y))
+    }
+  }
+
+  demage(n=1) {
+    while(n-- && this.backbone.length > 7) {
+      this.backbone.shift()
+      this.velocity++
     }
   }
 
