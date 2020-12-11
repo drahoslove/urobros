@@ -1,9 +1,9 @@
 
 class Snake {
   constructor(size, x, y) {
-    this.spacing = 9
+    this.spacing = 8
     this.maxVelocity = 3
-    this.rattleFactor = .56 // 0.58
+    this.rattleFactor = 0.49  // 0.58
     this.x = x
     this.y = y
     this.velocity = 8
@@ -23,13 +23,17 @@ class Snake {
       this.velocity = 0
     }
 
+    // this.rattleFactor *= 0.995
+    this.rattleFactor -= 0.005
+    this.rattleFactor = Math.max(this.rattleFactor, 0.49)
+
     const {x, y} = this.getVector()
     // make the snake
     const deltas = this.backbone.reduce((deltas, point, i, points) => {
       if (i === 0) {
         deltas.push({x, y})
       } else {
-        // current pos
+        // current point pos
         const { x: x1, y: y1 } = point
         // pos of leading point
         const { x: x2, y: y2 } = points[i-1]
@@ -37,7 +41,7 @@ class Snake {
         // new pos of leading point
         const x3 = x2 + deltas[i-1].x 
         const y3 = y2 + deltas[i-1].y
-        // direction form leading point to ???
+        // direction form leading point to new pos of current point
         const {x: xm, y: ym} = avg(point, points[i-1], this.rattleFactor)
         const dx3 = -(x3-xm)
         const dy3 = -(y3-ym)
@@ -67,7 +71,9 @@ class Snake {
     while(n--) {
       this.backbone.push(new PIXI.Point(x, y))
       this.maxVelocity += 0.1
+      this.velocity += .75
     }
+    this.rattleFactor = 0.9
   }
 
   demage(n=1) {
@@ -83,10 +89,10 @@ class Snake {
     const backbone = this.backbone
     g.clear()
 
-    // g.lineStyle(2, 0x888888)
-
+    
     g.beginFill(this.color || 0x999999)
     for (let i = backbone.length-1; i >= 0; i--) { // tail first
+      g.lineStyle(i === 0 ? 2 : 0, 0x888888)
       const r = (i == 0)
         ? 12
         : 10 - Math.max(0, Math.min(7, +7 - backbone.length+i))
@@ -102,7 +108,7 @@ class Snake {
   }
 
   turnLeft(weight) {
-    this.velocity += 0.3 * (1/(1-0.5*weight)-1)
+    this.velocity += 0.3 // * 1/(1/(1-0.5*weight)-1)
     this.velocity = Math.min(this.velocity, this.maxVelocity)
     this.direction -= 0.05 * this.velocity/2 * weight
   }

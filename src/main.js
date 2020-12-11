@@ -17,16 +17,16 @@ document.body.appendChild(app.view)
 const X = app.view.width/2
 const Y = app.view.height/2
 
-const colors = [0x990000, 0x000099, 0x009900]
+const colors = [0x990000, 0x000099, 0x009900, 0x009999,  0x999900]
 
 const snakes = Array.from({length: colors.length}).map((_, i) => {
-  const snake = new Snake(15, X+ 10*(i-1), Y)
-  snake.direction += (i-1)
+  const snake = new Snake(15, X+ 10*(i-2), Y)
+  snake.direction += (i-2)
   snake.color = colors[i%colors.length]
   return snake
 })
 
-const sweets = Array.from({length: colors.length*2})
+const sweets = Array.from({length: colors.length*5})
   .map((_, i) => {
     const sweet = new PIXI.Graphics()
     sweet.color = colors[i%colors.length]
@@ -109,11 +109,30 @@ const getGamepadDirection = (gamepadIndex=0) => {
   }
 }
 
+let autoPilotDirection = 0
+function autopilot() {
+  autoPilotDirection += (0.5 - rand(10)/40)*4
+  while (autoPilotDirection > 1) {
+    autoPilotDirection -= 2
+  }
+  while(autoPilotDirection< -1) {
+    autoPilotDirection += 2
+  }
+  autoPilotDirection *= 1.5
+}
+setInterval(autopilot, 150)
+
 
 // start animating
 app.ticker.add((t) => {
   // movement
-  [keyboardDirection, getGamepadDirection(), wheelDirection].forEach((direction, i) =>{
+  [
+    keyboardDirection,
+    autoPilotDirection,
+    getGamepadDirection(),
+    -autoPilotDirection,
+    wheelDirection,
+  ].forEach((direction, i) =>{
     if (direction > 0) {
       snakes[i].turnRight(+direction)
     }
@@ -123,14 +142,18 @@ app.ticker.add((t) => {
   })
 
   // check eat
-  snakes.forEach((snake) => {
+  snakes.forEach((snake, i) => {
     sweets.filter(({color}) => color === snake.color).forEach((sweet) => {
       const d = dist(snake.getHeadPos(), sweet)
       if (d < 22) {
         snake.grow(3)
+        if (i % 2) {
+          snake.grow(10)
+        } else {
+          score += 5
+          scoreText.text = `Score: ${score}`
+        }
         reposSweet(sweet)
-        score += 5
-        scoreText.text = `Score: ${score}`
       }
     })
   })
@@ -143,14 +166,13 @@ app.ticker.add((t) => {
       }
       const head = snake.getHeadPos()
       if (s.getBonesPos().some(point => dist(head, point) < 8)) {
-        console.log('xxx')
-        snake.direction += Math.PI/2
+        snake.direction += Math.PI
       }
     })
   })
 
   // check borders
-  snakes.forEach((snake) => {
+  snakes.forEach((snake, i) => {
     const E =  10 //distance from border where the bump happens
     const {x, y} = snake.getHeadPos()
     if (
@@ -158,18 +180,37 @@ app.ticker.add((t) => {
       x > app.view.width-E  || y > app.view.height-E
     ) {
       snake.demage()
-      snake.direction += Math.PI/2
-      score--
-      score = Math.max(score, 0)
-      scoreText.text = `Score: ${score}`
+      snake.direction += Math.PI
+      if (i % 2 === 0) {
+        score--
+        score = Math.max(score, 0)
+        scoreText.text = `Score: ${score}`
+      }
     }
   })
+
+  sweets.forEach(updateSweet)
 
 
   snakes.forEach((s) => { s.updateBones(t) })
   sweets.forEach(renderSweet)
 })
 
+
+function updateSweet(sweet) {
+  if (sweet.x > app.view.width/3) {
+    sweet.x -= rand(sweet.x - app.view.width/5)/20000
+  }
+  if (sweet.x < app.view.width/3*2) {
+    sweet.x += rand(app.view.width/5*4 - sweet.x)/20000
+  }
+  if (sweet.y > app.view.height/3) {
+    sweet.y -= rand(sweet.y - app.view.height/5)/20000
+  }
+  if (sweet.y < app.view.height/3*2) {
+    sweet.y += rand(app.view.height/5*4 - sweet.y)/20000
+  }
+}
 
 function renderSweet(sweet) {
   sweet.clear()
