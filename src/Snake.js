@@ -89,14 +89,23 @@ class Snake {
     const backbone = this.backbone
     g.clear()
 
+    const P = 2  // ofset of non-overlapped pieces
+
+    const radius = (i) => (i == 0)
+      ? 11
+      : 9 - Math.max(0, Math.min(7, +7 - backbone.length+i))
+  
+    const drawCircle = (i, outlined) => {
+      g.lineStyle(outlined ? 2 : 0, 0x111111)
+      g.drawCircle(backbone[i].x,  backbone[i].y, radius(i)+outlined*1)
+    }
     
     g.beginFill(this.color || 0x999999)
-    for (let i = backbone.length-1; i >= 0; i--) { // tail first
-      g.lineStyle(i === 0 ? 2 : 0, 0x888888)
-      const r = (i == 0)
-        ? 12
-        : 10 - Math.max(0, Math.min(7, +7 - backbone.length+i))
-      g.drawCircle(backbone[i].x,  backbone[i].y, r)
+    for (let i = backbone.length-1, j = i+P; j >= 0; i--, j--) { // tail first
+      if (i >=0 && i < backbone.length)
+        drawCircle(i, true)
+      if (j >=0 && j < backbone.length)
+        drawCircle(j, false)
     }
     g.endFill()
   }
