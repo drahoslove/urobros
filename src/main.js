@@ -70,15 +70,15 @@ let wheelDirection = 0
 let wheelTimeout
 document.body.addEventListener('wheel', (e) => {
   e.preventDefault()
-  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 0.666
+  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 0.8
   wheelDirection = Math.min(Math.abs(wheelDirection), 1) * Math.sign(wheelDirection)
   
   clearInterval(wheelTimeout)
   wheelTimeout = setInterval(() => {
-    wheelDirection *= 0.9
-    wheelDirection = +wheelDirection.toFixed(3)
-    if (wheelDirection === 0) {
-      clearInterval(0)
+    wheelDirection *= 0.8
+    if (Math.abs(wheelDirection) < 0.01) {
+      wheelDirection = 0
+      clearInterval(wheelTimeout)
     }
   }, 50)
 }, { passive: false})

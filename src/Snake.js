@@ -108,7 +108,7 @@ class Snake {
   }
 
   turnLeft(weight) {
-    this.velocity += 0.3 // * 1/(1/(1-0.5*weight)-1)
+    this.velocity += 0.3 * weight // * 1/(1/(1-0.5*weight)-1)
     this.velocity = Math.min(this.velocity, this.maxVelocity)
     this.direction -= 0.05 * this.velocity/2 * weight
   }
