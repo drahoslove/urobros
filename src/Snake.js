@@ -7,7 +7,7 @@ class Snake {
     this.x = x
     this.y = y
     this.velocity = 8
-    this.direction = -Math.PI/2
+    this.direction = -Math.PI/2 // up
     this.backbone = Array.from({ length: size })
       .map((_, i) =>  new PIXI.Point(0, i * this.spacing))
     this.g = new PIXI.Graphics()

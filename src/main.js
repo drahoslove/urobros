@@ -70,7 +70,6 @@ let wheelDirection = 0
 let wheelTimeout
 document.body.addEventListener('wheel', (e) => {
   e.preventDefault()
-  console.log('e', e)
   wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 0.666
   wheelDirection = Math.min(Math.abs(wheelDirection), 1) * Math.sign(wheelDirection)
   
@@ -180,8 +179,17 @@ app.ticker.add((t) => {
       x < E || y < E ||
       x > app.view.width-E  || y > app.view.height-E
     ) {
+      const walls = [ // 0 deg is right direction, going clockwise
+        x > app.view.width-E, // right
+        y > app.view.height-E, // bottom
+        x < E, // left
+        y < E, // top
+      ]
+      // normal direction from wall towards to room
+      const wallDirection = walls.indexOf(true) * Math.PI/2
+
       snake.demage()
-      snake.direction += Math.PI
+      snake.direction = reflectionAngle(snake.direction, wallDirection)
       if (i % 2 === 0) {
         score--
         score = Math.max(score, 0)
