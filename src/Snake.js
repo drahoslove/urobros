@@ -19,10 +19,10 @@ class Snake {
 
   updateBones(t=1) {
     if(t>2) {
-      t=1
+      t=2
     }
     // slowing down naturally
-    this.velocity *= 0.96 * t
+    this.velocity *= Math.pow(0.96, t)
     this.velocity -= 0.015 * t
     if (this.velocity < 0.02) {
       this.velocity = 0

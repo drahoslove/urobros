@@ -89,7 +89,7 @@ let wheelDirection = 0
 let wheelTimeout
 document.body.addEventListener('wheel', (e) => {
   e.preventDefault()
-  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 1.1
+  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 1
   wheelDirection = Math.min(Math.abs(wheelDirection), 1.2) * Math.sign(wheelDirection)
   
   clearInterval(wheelTimeout)
