@@ -14,7 +14,6 @@ class Snake {
     this.g.alpha = 1
     this.g.x = x
     this.g.y = y
-    this.prevTractions = []
   }
 
   updateBones(t=1) {
@@ -85,6 +84,7 @@ class Snake {
     while(n-- && this.backbone.length > 7) {
       this.backbone.shift()
       this.maxVelocity -= 0.1
+      this.velocity *= 0.8
       this.velocity -= 0.3
     }
   }
@@ -117,13 +117,13 @@ class Snake {
   turnRight(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction += 0.03 * this.velocity * weight
+    this.direction += 0.025 * this.velocity * weight
   }
 
   turnLeft(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction -= 0.03 * this.velocity * weight
+    this.direction -= 0.025 * this.velocity * weight
   }
   
   getVector(direction=this.direction, velocity=this.velocity) {
@@ -141,7 +141,7 @@ class Snake {
 
     // direction of each bone point
     const directions = this.backbone
-      .filter((_, i) => i < 30) // only consider begining of of the snake
+      .filter((_, i) => i < 30 && i % 2 === 1) // only consider begining of of the snake
       .map((point, i, points) => {
         // current point pos
         const { x: x1, y: y1 } = point
@@ -165,13 +165,7 @@ class Snake {
 
     // return angles.reduce((sum, val) => sum+val, 0)/angles.length //avg
 
-    const traction = (stDeviation(angles) * 10)-0.05
-    // this.prevTractions.push(traction)
-    // if (this.prevTractions.length > 4) {
-    //   this.prevTractions.shift()
-    // }
-    // this.prevTractions.reduce((sum, val) => (sum+val), 0)/this.prevTractions.length // avg of last 4
-    return traction
+    return (stDeviation(angles) * 5) // + 0.05
   }
 
   getHeadPos() {

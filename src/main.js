@@ -21,11 +21,18 @@ document.body.appendChild(app.view)
 const X = app.view.width/2
 const Y = app.view.height/2
 
-const colors = [0x990000, 0x000099, 0x009900, 0x009999,  0x999900]
+const colors = [
+  0x990000,
+  0x000099,
+  0x009900,
+  0x009999,
+  0x999900,
+]
 
-const snakes = Array.from({length: colors.length}).map((_, i) => {
-  const snake = new Snake(15, X+ 10*(i-2), Y)
-  snake.direction += (i-2)
+const snakes = Array.from({length: colors.length}).map((_, i, { length }) => {
+  const half = (length-1)/2
+  const snake = new Snake(15, X+ 10*(i-half), Y)
+  snake.direction += i-half
   snake.color = colors[i%colors.length]
   return snake
 })
