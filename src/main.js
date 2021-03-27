@@ -172,7 +172,7 @@ app.ticker.add((t) => {
     }
   })
 
-  // check eat
+  // check food
   snakes.forEach((snake, i) => {
     sweets.filter(({color}) => color === snake.color).forEach((sweet) => {
       const d = dist(snake.getHeadPos(), sweet)
@@ -229,22 +229,22 @@ app.ticker.add((t) => {
     }
   })
 
-  sweets.forEach(updateSweet)
+  sweets.forEach((s) => updateSweet(t, s))
   snakes.forEach((s) => { s.updateBones(t) })
 })
 
 
-function updateSweet(sweet) {
+function updateSweet(sweet, t) {
   if (sweet.x > app.view.width/3) {
-    sweet.x -= rand(sweet.x - app.view.width/5)/20000
+    sweet.x -= rand(sweet.x - app.view.width/5)/20000 * t
   }
   if (sweet.x < app.view.width/3*2) {
-    sweet.x += rand(app.view.width/5*4 - sweet.x)/20000
+    sweet.x += rand(app.view.width/5*4 - sweet.x)/20000 * t
   }
   if (sweet.y > app.view.height/3) {
-    sweet.y -= rand(sweet.y - app.view.height/5)/20000
+    sweet.y -= rand(sweet.y - app.view.height/5)/20000 * t
   }
   if (sweet.y < app.view.height/3*2) {
-    sweet.y += rand(app.view.height/5*4 - sweet.y)/20000
+    sweet.y += rand(app.view.height/5*4 - sweet.y)/20000 * t
   }
 }

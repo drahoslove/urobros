@@ -76,7 +76,7 @@ class Snake {
     while(n--) {
       this.backbone.push(new PIXI.Point(x, y))
       this.maxVelocity += 0.1
-      this.velocity += .75
+      this.velocity += 0.3
     }
     this.rattleFactor = 0.9
   }
@@ -85,7 +85,7 @@ class Snake {
     while(n-- && this.backbone.length > 7) {
       this.backbone.shift()
       this.maxVelocity -= 0.1
-      this.velocity++
+      this.velocity -= 0.3
     }
   }
 
@@ -117,13 +117,13 @@ class Snake {
   turnRight(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction += 0.05 * this.velocity/2 * weight
+    this.direction += 0.03 * this.velocity * weight
   }
 
   turnLeft(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction -= 0.05 * this.velocity/2 * weight
+    this.direction -= 0.03 * this.velocity * weight
   }
   
   getVector(direction=this.direction, velocity=this.velocity) {
