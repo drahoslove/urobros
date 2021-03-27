@@ -14,6 +14,10 @@ const app = new PIXI.Application({
 })
 document.body.appendChild(app.view)
 
+
+// x goes left to right
+// y goes top to bottom
+
 const X = app.view.width/2
 const Y = app.view.height/2
 
@@ -33,17 +37,32 @@ const sweets = Array.from({length: colors.length*5})
     reposSweet(sweet)
     return sweet
   })
+sweets.forEach(function renderSweet(sweet) {
+  sweet.clear()
+  sweet.beginFill(sweet.color)
+  sweet.drawCircle(0, 0, 8)
+  sweet.endFill()
+})
 
+
+const board = new PIXI.Graphics()
+{
+  board.clear()
+  board.beginFill(0xdddddd, 0.75)
+  board.drawRect(0, 0, 270, 130)
+  board.endFill()
+}
 const scoreText = new PIXI.Text('Score: 0', {
   fontSize: 26,
-  fill: 0x666666,
+  fontFamily: 'monospace',
+  fill: 0x444444,
 })
 scoreText.x = 10
 scoreText.y = 10
 
 app.stage.addChild(...snakes.map((({g}) => g)))
 app.stage.addChild(...sweets)
-app.stage.addChild(scoreText)
+app.stage.addChild(board, scoreText)
 
 // keyboard controll
 let keyboardDirection = 0
@@ -70,12 +89,12 @@ let wheelDirection = 0
 let wheelTimeout
 document.body.addEventListener('wheel', (e) => {
   e.preventDefault()
-  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 0.8
-  wheelDirection = Math.min(Math.abs(wheelDirection), 1) * Math.sign(wheelDirection)
+  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 1.1
+  wheelDirection = Math.min(Math.abs(wheelDirection), 1.2) * Math.sign(wheelDirection)
   
   clearInterval(wheelTimeout)
   wheelTimeout = setInterval(() => {
-    wheelDirection *= 0.8
+    wheelDirection *= 0.85
     if (Math.abs(wheelDirection) < 0.01) {
       wheelDirection = 0
       clearInterval(wheelTimeout)
@@ -123,10 +142,12 @@ function autopilot() {
 setInterval(autopilot, 150)
 
 
+let activeSnakeIndex = 0
+
 // start animating
 app.ticker.add((t) => {
   // movement
-  [
+  ;[
     keyboardDirection,
     autoPilotDirection,
     getGamepadDirection(),
@@ -138,6 +159,16 @@ app.ticker.add((t) => {
     }
     if (direction < 0) {
       snakes[i].turnLeft(-direction)
+    }
+    if (i % 2 === 0 && direction) {
+      activeSnakeIndex = i
+    }
+    if (activeSnakeIndex === i) {
+      scoreText.text = ''
+        + `Score:     ${score}\n`
+        + `Direction: ${(normalizedAngle(snakes[i].direction) / Math.PI /2 * 360).toFixed(0)}°\n`
+        + `Velocity:  ${snakes[i].velocity.toFixed(3)}\n`
+        + `Traction:  ${snakes[i].getTraction().toFixed(3)}\n`
     }
   })
 
@@ -199,10 +230,7 @@ app.ticker.add((t) => {
   })
 
   sweets.forEach(updateSweet)
-
-
   snakes.forEach((s) => { s.updateBones(t) })
-  sweets.forEach(renderSweet)
 })
 
 
@@ -219,11 +247,4 @@ function updateSweet(sweet) {
   if (sweet.y < app.view.height/3*2) {
     sweet.y += rand(app.view.height/5*4 - sweet.y)/20000
   }
-}
-
-function renderSweet(sweet) {
-  sweet.clear()
-  sweet.beginFill(sweet.color)
-  sweet.drawCircle(0, 0, 8)
-  sweet.endFill()
 }
