@@ -23,7 +23,7 @@ const controls = {
   'gLS': '🎮 left stick',
   'gRS': '🎮 right stick',
   'auto': '👾 autopilot',
-  'none': '⛔ remove',
+  'none': '⛔ none',
 }
 
 const defaultControls = ['k', 'auto', 'gT', 'auto', 'w']
@@ -41,21 +41,17 @@ const createSelector = (parent, defaultVal, color) => {
   selector.value = defaultVal
   selector.style.setProperty('--color', toCSS(color))
   selector.onchange = function() {
-    if (this.value === 'none') {
-      window.location.hash = SNAKE_COUNT-1
-      window.location.reload()
-    }
     this.blur()
   }
   document.querySelector(parent).appendChild(selector)
   return selector
 }
-const createAddButton = (parent) => {
+const createAddButton = (parent, name, count) => {
   const button = document.createElement('button')
-  button.innerHTML = '➕ add snake'
+  button.innerHTML = name
   button.style.setProperty('--color', toCSS(hsl2rgb(0, 0, 50)))
   button.onclick = () => {
-    window.location.hash = SNAKE_COUNT+1
+    window.location.hash = SNAKE_COUNT+count
     window.location.reload()
   }
   document.querySelector(parent).appendChild(button)
@@ -65,7 +61,10 @@ const createAddButton = (parent) => {
 const controlSelectors = colors.map((color, i) =>
   createSelector('#settings', defaultControls[i] || 'auto', color),
 )
-createAddButton('#settings')
+createAddButton('#settings', '➕ add snake', 1)
+if (SNAKE_COUNT) {
+  createAddButton('#settings', '❌ remove', -1)
+}
 
 
 const getSelectedControls = () =>
@@ -126,12 +125,13 @@ let wheelDirection = 0
 let wheelTimeout
 document.body.addEventListener('wheel', (e) => {
   e.preventDefault()
-  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 1
+  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * .8
   wheelDirection = Math.min(Math.abs(wheelDirection), 1.2) * Math.sign(wheelDirection)
   
   clearInterval(wheelTimeout)
   wheelTimeout = setInterval(() => {
-    wheelDirection *= 0.85
+    wheelDirection *= 0.8
+    // wheelDirection -= 0.1 * Math.sign(wheelDirection)
     if (Math.abs(wheelDirection) < 0.01) {
       wheelDirection = 0
       clearInterval(wheelTimeout)

@@ -41,6 +41,9 @@ const sweets = Array.from({length: SNAKE_COUNT*SWEET_PER_SNAKE})
 sweets.forEach(function renderSweet(sweet) {
   sweet.clear()
   sweet.beginFill(sweet.color)
+  sweet.lineStyle(1, 0x111111)
+  sweet.drawCircle(0, 0, 9)
+  sweet.lineStyle(0, 0)
   sweet.drawCircle(0, 0, 8)
   sweet.endFill()
 })
@@ -81,7 +84,7 @@ app.ticker.add((t) => {
       if (direction < 0) {
         snakes[i].turnLeft(-direction)
       }
-      if (direction) {
+      if (direction && controls[i] !== 'auto') {
         activeSnakeIndex = i
       }
       if (activeSnakeIndex === i) {
