@@ -50,7 +50,7 @@ const board = new PIXI.Graphics()
 {
   board.clear()
   board.beginFill(0xdddddd, 0.66)
-  board.drawRect(0, 0, 290, 130)
+  board.drawRect(0, 0, 320, 130)
   board.endFill()
 }
 const scoreText = new PIXI.Text('Score: 0', {
@@ -72,8 +72,9 @@ let activeSnakeIndex = 0
 // start animating
 app.ticker.add((t) => {
   // movement
-  getSelectedControls()
-    .map(getDirection).forEach((direction, i) => {
+  const controls = getSelectedControls()
+  snakes.forEach((snake, i) => {
+      const direction =  getDirection(controls[i])
       if (direction > 0) {
         snakes[i].turnRight(+direction)
       }
@@ -98,6 +99,9 @@ app.ticker.add((t) => {
       const d = dist(snake.getHeadPos(), sweet)
       if (d < 22) {
         snake.grow(3)
+        if (controls[i] === 'auto') {
+          snake.grow(9)
+        }
         scores[i] += 5
         scoreText.text = `Scores: ${scores.join(':')}`
         reposSweet(sweet)

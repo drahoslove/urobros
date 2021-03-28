@@ -58,7 +58,7 @@ const createSelector = (parent, defaultVal, color) => {
 }
 
 const controlSelectors = colors.map((color, i) =>
-  createSelector('#settings', defaultControls[i] || 'auto', toCSS(color)),
+  createSelector('#settings', defaultControls[i] || 'none', toCSS(color)),
 )
 
 const getSelectedControls = () =>
