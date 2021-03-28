@@ -8,21 +8,6 @@ for (let i = 0, hue = 0; i < SNAKE_COUNT; i++, hue += 360/SNAKE_COUNT) {
   colors.push(hsl2rgb(hue, 60, 50))
 }
   
-// [
-//   0x0066bb,
-//   0x66bb00,
-//   0xbb0066,
-//   0x1111cc,
-//   0xcc1111,
-//   0x990099,
-//   0x11cc11,
-//   0x009999,
-//   0x999900,
-// ]
-// .reverse()
-// .filter((_, i) => (i < SNAKE_COUNT))
-// .reverse()
-
 const toCSS = (color) => '#'+color.toString(16).padStart(6, '0')
 
 // controls
@@ -38,7 +23,7 @@ const controls = {
   'gLS': '🎮 left stick',
   'gRS': '🎮 right stick',
   'auto': '👾 autopilot',
-  'none': '⛔ none',
+  'none': '⛔ remove',
 }
 
 const defaultControls = ['k', 'auto', 'gT', 'auto', 'w']
@@ -54,7 +39,7 @@ const createSelector = (parent, defaultVal, color) => {
       selector.appendChild(option)
     })
   selector.value = defaultVal
-  selector.style.setProperty('--color', color)
+  selector.style.setProperty('--color', toCSS(color))
   selector.onchange = function() {
     if (this.value === 'none') {
       window.location.hash = SNAKE_COUNT-1
@@ -65,10 +50,23 @@ const createSelector = (parent, defaultVal, color) => {
   document.querySelector(parent).appendChild(selector)
   return selector
 }
+const createAddButton = (parent) => {
+  const button = document.createElement('button')
+  button.innerHTML = '➕ add snake'
+  button.style.setProperty('--color', toCSS(hsl2rgb(0, 0, 50)))
+  button.onclick = () => {
+    window.location.hash = SNAKE_COUNT+1
+    window.location.reload()
+  }
+  document.querySelector(parent).appendChild(button)
+  return button
+}
 
 const controlSelectors = colors.map((color, i) =>
-  createSelector('#settings', defaultControls[i] || 'auto', toCSS(color)),
+  createSelector('#settings', defaultControls[i] || 'auto', color),
 )
+createAddButton('#settings')
+
 
 const getSelectedControls = () =>
   controlSelectors.map((controlSelector,  i) =>
