@@ -2,17 +2,26 @@ const SNAKE_COUNT = window.location.hash
   ? (+window.location.hash.substr(1) || 0)
   : 5
 
-const colors = [
-  0x000099,
-  0x990000,
-  0x990099,
-  0x009900,
-  0x009999,
-  0x999900,
-]
-.reverse()
-.filter((_, i) => (i < SNAKE_COUNT))
-.reverse()
+const colors = []
+
+for (let i = 0, hue = 0; i < SNAKE_COUNT; i++, hue += 360/SNAKE_COUNT) {
+  colors.push(hsl2rgb(hue, 60, 50))
+}
+  
+// [
+//   0x0066bb,
+//   0x66bb00,
+//   0xbb0066,
+//   0x1111cc,
+//   0xcc1111,
+//   0x990099,
+//   0x11cc11,
+//   0x009999,
+//   0x999900,
+// ]
+// .reverse()
+// .filter((_, i) => (i < SNAKE_COUNT))
+// .reverse()
 
 const toCSS = (color) => '#'+color.toString(16).padStart(6, '0')
 
@@ -58,7 +67,7 @@ const createSelector = (parent, defaultVal, color) => {
 }
 
 const controlSelectors = colors.map((color, i) =>
-  createSelector('#settings', defaultControls[i] || 'none', toCSS(color)),
+  createSelector('#settings', defaultControls[i] || 'auto', toCSS(color)),
 )
 
 const getSelectedControls = () =>
@@ -74,7 +83,7 @@ const getDirection = (controlName, i) => ({
   'kJK': keyboardDirections[3],
   'kJL': keyboardDirections[4],
   'w': wheelDirection,
-  'auto': i ? autoPilotDirection : -autoPilotDirection,
+  'auto': autoPilotDirections[i],
   'gT': getGamepadDirection(0, 'TR'),
   'gLS': getGamepadDirection(0, 'LS'),
   'gRS': getGamepadDirection(0, 'RS'),
@@ -170,15 +179,19 @@ const getGamepadDirection = (gamepadIndex=0, what) => {
   }
 }
 
-let autoPilotDirection = 0
+let autoPilotDirections = colors.map(() => 0)
 function autopilot() {
-  autoPilotDirection += (0.5 - rand(10)/40)*4
-  while (autoPilotDirection > 1) {
-    autoPilotDirection -= 2
-  }
-  while(autoPilotDirection< -1) {
-    autoPilotDirection += 2
-  }
-  autoPilotDirection *= 1.5
+  autoPilotDirections.forEach((_,i) => {
+    autoPilotDirections[i] += (0.5 - rand(10)/40)*4
+    while (autoPilotDirections[i] > 1) {
+      autoPilotDirections[i] -= 2
+    }
+    while(autoPilotDirections[i]< -1) {
+      autoPilotDirections[i] += 2
+    }
+    autoPilotDirections[i] *= 1.5
+  })
 }
-setInterval(autopilot, 150)
+setTimeout(() => {
+  setInterval(autopilot, 150)
+}, 400)

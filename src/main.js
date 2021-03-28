@@ -25,8 +25,8 @@ const Y = app.view.height/2
 
 const snakes = Array.from({length: SNAKE_COUNT}).map((_, i, { length }) => {
   const half = (length-1)/2
-  const snake = new Snake(15, X+ 10*(i-half), Y)
-  snake.direction += i-half
+  const snake = new Snake(15, X+ 20*(i-half), Y + Math.abs(10*(i-half)))
+  snake.direction += (i-half) * 5/length
   snake.color = colors[i%SNAKE_COUNT]
   return snake
 })
@@ -74,7 +74,7 @@ app.ticker.add((t) => {
   // movement
   const controls = getSelectedControls()
   snakes.forEach((snake, i) => {
-      const direction =  getDirection(controls[i])
+      const direction =  getDirection(controls[i], i)
       if (direction > 0) {
         snakes[i].turnRight(+direction)
       }
