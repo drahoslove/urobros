@@ -1,10 +1,6 @@
-let score = 0
+const scores = Array.from({length: SNAKE_COUNT}).map(() => 0)
 
-const reposSweet = (sweet) => {
-  const O = 10
-  sweet.x = O+rand(app.view.width-2*O)
-  sweet.y = O+rand(app.view.height-2*O)
-}
+const SWEET_PER_SNAKE = 5
 
 const app = new PIXI.Application({
   width: 1024,
@@ -12,8 +8,14 @@ const app = new PIXI.Application({
   transparent: true,
   antialias: true,
 })
-document.body.appendChild(app.view)
 
+document.querySelector('#app').appendChild(app.view)
+
+const reposSweet = (sweet) => {
+  const O = 10
+  sweet.x = O+rand(app.view.width-2*O)
+  sweet.y = O+rand(app.view.height-2*O)
+}
 
 // x goes left to right
 // y goes top to bottom
@@ -21,26 +23,18 @@ document.body.appendChild(app.view)
 const X = app.view.width/2
 const Y = app.view.height/2
 
-const colors = [
-  0x990000,
-  0x000099,
-  0x009900,
-  0x009999,
-  0x999900,
-]
-
-const snakes = Array.from({length: colors.length}).map((_, i, { length }) => {
+const snakes = Array.from({length: SNAKE_COUNT}).map((_, i, { length }) => {
   const half = (length-1)/2
   const snake = new Snake(15, X+ 10*(i-half), Y)
   snake.direction += i-half
-  snake.color = colors[i%colors.length]
+  snake.color = colors[i%SNAKE_COUNT]
   return snake
 })
 
-const sweets = Array.from({length: colors.length*5})
+const sweets = Array.from({length: SNAKE_COUNT*SWEET_PER_SNAKE})
   .map((_, i) => {
     const sweet = new PIXI.Graphics()
-    sweet.color = colors[i%colors.length]
+    sweet.color = colors[i%SNAKE_COUNT]
     reposSweet(sweet)
     return sweet
   })
@@ -55,8 +49,8 @@ sweets.forEach(function renderSweet(sweet) {
 const board = new PIXI.Graphics()
 {
   board.clear()
-  board.beginFill(0xdddddd, 0.75)
-  board.drawRect(0, 0, 270, 130)
+  board.beginFill(0xdddddd, 0.66)
+  board.drawRect(0, 0, 290, 130)
   board.endFill()
 }
 const scoreText = new PIXI.Text('Score: 0', {
@@ -71,82 +65,6 @@ app.stage.addChild(...snakes.map((({g}) => g)))
 app.stage.addChild(...sweets)
 app.stage.addChild(board, scoreText)
 
-// keyboard controll
-let keyboardDirection = 0
-const LEFT_KEYS = ['ArrowLeft', 'd', 'j']
-const RIGHT_KEYS = ['ArrowRight', 'f', 'k']
-window.onkeydown = (e) => {
-  if (LEFT_KEYS.includes(e.key)) {
-    keyboardDirection = -1
-  }
-  if (RIGHT_KEYS.includes(e.key)) {
-    keyboardDirection = 1
-  }
-}
-window.onkeyup = (e) => {
-  if (keyboardDirection === -1 && LEFT_KEYS.includes(e.key)) {
-    keyboardDirection = 0
-  }
-  if (keyboardDirection === +1 && RIGHT_KEYS.includes(e.key)) {
-    keyboardDirection = 0
-  }
-}
-// wheel controll
-let wheelDirection = 0
-let wheelTimeout
-document.body.addEventListener('wheel', (e) => {
-  e.preventDefault()
-  wheelDirection += e.deltaY/( e.deltaMode ? 3 : 100) * 1
-  wheelDirection = Math.min(Math.abs(wheelDirection), 1.2) * Math.sign(wheelDirection)
-  
-  clearInterval(wheelTimeout)
-  wheelTimeout = setInterval(() => {
-    wheelDirection *= 0.85
-    if (Math.abs(wheelDirection) < 0.01) {
-      wheelDirection = 0
-      clearInterval(wheelTimeout)
-    }
-  }, 50)
-}, { passive: false})
-
-// gamepad controll
-const getGamepadDirection = (gamepadIndex=0) => {
-  try {
-    const gamepad = navigator.getGamepads()[gamepadIndex]
-    if (gamepad) {
-      // left stick
-      const x1 = +gamepad.axes[0].toFixed(3)
-      const y1 = +gamepad.axes[1].toFixed(3)
-      // right stick
-      const x2 = +gamepad.axes[2].toFixed(3)
-      const y2 = +gamepad.axes[3].toFixed(3)
-      // trigger buttons
-      const lt = gamepad.buttons[6].value
-      const rt = gamepad.buttons[7].value
-      const tr = rt-lt
-      // directionpad buttons
-      const ld = gamepad.buttons[14].value
-      const rd = gamepad.buttons[15].value
-      const dp = rd-ld
-      return x2 || x1 || tr || dp
-    }
-  } catch(e) {
-    return 0
-  }
-}
-
-let autoPilotDirection = 0
-function autopilot() {
-  autoPilotDirection += (0.5 - rand(10)/40)*4
-  while (autoPilotDirection > 1) {
-    autoPilotDirection -= 2
-  }
-  while(autoPilotDirection< -1) {
-    autoPilotDirection += 2
-  }
-  autoPilotDirection *= 1.5
-}
-setInterval(autopilot, 150)
 
 
 let activeSnakeIndex = 0
@@ -154,30 +72,25 @@ let activeSnakeIndex = 0
 // start animating
 app.ticker.add((t) => {
   // movement
-  ;[
-    keyboardDirection,
-    autoPilotDirection,
-    getGamepadDirection(),
-    -autoPilotDirection,
-    wheelDirection,
-  ].forEach((direction, i) =>{
-    if (direction > 0) {
-      snakes[i].turnRight(+direction)
-    }
-    if (direction < 0) {
-      snakes[i].turnLeft(-direction)
-    }
-    if (i % 2 === 0 && direction) {
-      activeSnakeIndex = i
-    }
-    if (activeSnakeIndex === i) {
-      scoreText.text = ''
-        + `Score:     ${score}\n`
-        + `Direction: ${(normalizedAngle(snakes[i].direction) / Math.PI /2 * 360).toFixed(0)}°\n`
-        + `Velocity:  ${snakes[i].velocity.toFixed(3)}\n`
-        + `Traction:  ${snakes[i].getTraction().toFixed(3)}\n`
-    }
-  })
+  getSelectedControls()
+    .map(getDirection).forEach((direction, i) => {
+      if (direction > 0) {
+        snakes[i].turnRight(+direction)
+      }
+      if (direction < 0) {
+        snakes[i].turnLeft(-direction)
+      }
+      if (direction) {
+        activeSnakeIndex = i
+      }
+      if (activeSnakeIndex === i) {
+        scoreText.text = ''
+          + `Scores:    ${scores.join(':')}\n`
+          + `Direction: ${(normalizedAngle(snakes[i].direction) / Math.PI /2 * 360).toFixed(0)}°\n`
+          + `Velocity:  ${snakes[i].velocity.toFixed(3)}\n`
+          + `Traction:  ${snakes[i].getTraction().toFixed(3)}\n`
+      }
+    })
 
   // check food
   snakes.forEach((snake, i) => {
@@ -185,12 +98,8 @@ app.ticker.add((t) => {
       const d = dist(snake.getHeadPos(), sweet)
       if (d < 22) {
         snake.grow(3)
-        if (i % 2) {
-          snake.grow(10)
-        } else {
-          score += 5
-          scoreText.text = `Score: ${score}`
-        }
+        scores[i] += 5
+        scoreText.text = `Scores: ${scores.join(':')}`
         reposSweet(sweet)
       }
     })
@@ -228,11 +137,9 @@ app.ticker.add((t) => {
 
       snake.demage()
       snake.direction = reflectionAngle(snake.direction, wallDirection)
-      if (i % 2 === 0) {
-        score--
-        score = Math.max(score, 0)
-        scoreText.text = `Score: ${score}`
-      }
+      scores[i]--
+      scores[i] = Math.max(scores[i], 0)
+      scoreText.text = `Scores: ${scores.join(':')}`
     }
   })
 

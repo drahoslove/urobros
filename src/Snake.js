@@ -117,13 +117,13 @@ class Snake {
   turnRight(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction += 0.025 * this.velocity * weight
+    this.direction += 0.025 * Math.max(1.5, this.velocity) * weight
   }
 
   turnLeft(weight) {
     this.velocity += 0.4 * weight * Math.min(1, this.getTraction())
     this.velocity = Math.min(this.velocity, this.maxVelocity)
-    this.direction -= 0.025 * this.velocity * weight
+    this.direction -= 0.025 * Math.max(1.5, this.velocity) * weight
   }
   
   getVector(direction=this.direction, velocity=this.velocity) {
